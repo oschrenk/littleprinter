@@ -105,3 +105,18 @@ Dropbear 2012.55 needs. Override the host with `BRIDGE_IP`.
 
 It reads the private key from `~/.ssh/berg_bridge_rsa`. That key now lives in 1Password, so
 the script fails until the key is back at that path. See LP-21.
+
+## sanitize_capture.py
+
+Turn a raw `lp-proxy` capture into a fixture that is safe to publish. It keeps message types,
+order, relative timing, RSSI, return codes and daemon log text. It replaces addresses, network
+identifiers and the U-Boot environment with fake values, and replaces every print image with a
+payload you supply.
+
+```sh
+client/target/release/lp-encoder set-delivery-and-print 1 client/testdata/barcodehead.png > payload.bin
+./sanitize_capture.py ../captures/run.jsonl ../proxy/testdata/run.jsonl payload.bin
+```
+
+It refuses to write the output if an original value survives. `original_len` records each
+message's real size, because the replaced image changes `len`.
