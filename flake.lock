@@ -34,10 +34,31 @@
         "type": "github"
       }
     },
+    "oschrenk-pkgs": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793243760,
+        "narHash": "sha256-WUBAxH4k5hbjMI/un4xatZ5Yg3yfRVjQMchqMfkHsK4=",
+        "owner": "oschrenk",
+        "repo": "pkgs",
+        "rev": "210ff48aec926030afbad37892074a6b5d0a4a5a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "oschrenk",
+        "repo": "pkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs",
+        "oschrenk-pkgs": "oschrenk-pkgs",
         "rust-overlay": "rust-overlay"
       }
     },

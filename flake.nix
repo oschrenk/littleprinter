@@ -9,6 +9,8 @@
     # the whole reason this input exists.
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
+    oschrenk-pkgs.url = "github:oschrenk/pkgs";
+    oschrenk-pkgs.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -16,6 +18,7 @@
       nixpkgs,
       flake-utils,
       rust-overlay,
+      oschrenk-pkgs,
       ...
     }:
     flake-utils.lib.eachDefaultSystem (
@@ -44,7 +47,7 @@
           packages = [
             rustToolchain
             pkgs.git-lfs
-            pkgs.go-task
+            (oschrenk-pkgs.packages.${system}.go-task or pkgs.go-task)
           ];
 
           # rust-lld does the cross link. rust-std for the target ships
