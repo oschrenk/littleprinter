@@ -1,0 +1,49 @@
+version: '3'
+# BRIDGE_TARGET also comes from the devShell; repeated here so `task --list`
+# and the cross task read the same way outside it.
+vars:
+  BRIDGE_TARGET: armv5te-unknown-linux-musleabi
+  BIN: lp-encoder
+tasks:
+  default:
+    cmds:
+      - task --list
+  setup:
+    desc: Install the Git LFS hooks and filters here, and fetch the LFS files
+    cmds:
+      # The global core.hooksPath forwards to the hooks in the git dir, and LFS
+      # refuses to overwrite the forwarding hooks. Point LFS at the git dir.
+      - git -c core.hooksPath="$(git rev-parse --git-dir)/hooks" lfs install --local
+      - git lfs pull
+  test:
+    desc: Run the encoder tests, including the Python golden vectors
+    dir: client
+    cmds:
+      - cargo test --release
+  build:
+    desc: Build the encoder for this machine
+    dir: client
+    cmds:
+      - cargo build --release
+  bridge:
+    desc: Cross-build the static ARM binary for the Bridge, and check it is static
+    dir: client
+    cmds:
+      - cargo build --release --target {{.BRIDGE_TARGET}}
+      - |
+        out=target/{{.BRIDGE_TARGET}}/release/{{.BIN}}
+        file "$out"
+        # A dynamically linked binary would need the device's uClibc, which is
+        # the thing this target exists to avoid. Fail rather than ship it.
+        file "$out" | grep -q 'statically linked' || {
+          echo "not statically linked" >&2; exit 1; }
+        echo "$(wc -c < "$out") bytes"
+  fmt:
+    desc: Format the Rust sources and the flake
+    cmds:
+      - cargo fmt --manifest-path client/Cargo.toml
+      - nix fmt
+  clean:
+    dir: client
+    cmds:
+      - cargo clean
