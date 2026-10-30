@@ -1,2 +1,4 @@
 # Rust build output
 /client/target/
+/proxy/target/
+/captures/

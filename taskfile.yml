@@ -38,10 +38,32 @@ tasks:
         file "$out" | grep -q 'statically linked' || {
           echo "not statically linked" >&2; exit 1; }
         echo "$(wc -c < "$out") bytes"
+  proxy-test:
+    desc: Run the websocket logging proxy tests
+    dir: proxy
+    cmds:
+      - cargo test --release
+  proxy-build:
+    desc: Build the websocket logging proxy for this machine
+    dir: proxy
+    cmds:
+      - cargo build --release
+  proxy-bridge:
+    desc: Cross-build the static ARM proxy for the Bridge, and check it is static
+    dir: proxy
+    cmds:
+      - cargo build --release --target {{.BRIDGE_TARGET}}
+      - |
+        out=target/{{.BRIDGE_TARGET}}/release/lp-proxy
+        file "$out"
+        file "$out" | grep -q 'statically linked' || {
+          echo "not statically linked" >&2; exit 1; }
+        echo "$(wc -c < "$out") bytes"
   fmt:
     desc: Format the Rust sources and the flake
     cmds:
       - cargo fmt --manifest-path client/Cargo.toml
+      - cargo fmt --manifest-path proxy/Cargo.toml
       - nix fmt
   clean:
     dir: client

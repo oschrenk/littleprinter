@@ -74,6 +74,24 @@ task bridge      # static ARM build, checked with file(1)
 One deliberate limitation: it **refuses any pixel that is not pure black or white**, rather than
 guessing at Pillow's Floyd–Steinberg dither. Artwork must be 1-bit before it reaches the encoder.
 
+## The proxy
+
+[`proxy/`](proxy/) relays the Bridge daemon's websocket to a server and logs every frame, with a
+timestamp, as one JSON line on stdout. It needs no change to the daemon, because
+`endpoint.override` already sets the host and port the daemon connects to. Bytes are forwarded
+unchanged, except the `Host` header in the upgrade request.
+
+```sh
+task proxy-test
+task proxy-build
+mkdir -p captures
+proxy/target/release/lp-proxy 0.0.0.0:8080 littleprinter.nordprojects.co --payloads > captures/run.jsonl
+```
+
+Without `--payloads` it logs only times and lengths, which is the mode for running on the Bridge
+itself, where a log in `/tmp` uses scarce RAM. **With `--payloads` the log holds link keys in
+cleartext, so do not commit it or share it.** `captures/` is ignored by git.
+
 ## If your Bridge is misbehaving, check these first
 
 1. **`dmesg | grep -i "uncorrectable\|wrong data CRC"`.** If anything appears, you may have
