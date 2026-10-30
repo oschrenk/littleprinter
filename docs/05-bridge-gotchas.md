@@ -234,8 +234,14 @@ took **three minutes 55 seconds across eleven join attempts**, each with a fresh
 address, before the first `DeviceEvent` heartbeat arrived. Signal was never the issue; RSSI
 settled between -43 and -51 dBm.
 
+**Later measurements disagree with this section.** With the printer left alone, daemon restarts
+came back on the same PAN ID in about 20 seconds, and a power cut kept the PAN ID too. So the
+network does resume, and power-cycling the printer in that run possibly caused the four minutes
+above. The code path has not been traced. A power cut can also strand the printer for much longer:
+see "Possible quirk" in `02-zigbee-channel-selection.md`.
+
 **A red light in the few minutes after a Bridge restart is normal.** Wait it out before
-concluding anything is broken. The extended PAN ID is worth a look while you do: mine was
+concluding anything is broken, but if it lasts more than about ten minutes, restart the daemon. The extended PAN ID is worth a look while you do: mine was
 `0x42455247143cf7ca`, and `0x42455247` is ASCII `BERG`. Only the low 32 bits are random.
 
 ## `/dev/mtd6` does not exist

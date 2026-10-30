@@ -136,3 +136,60 @@ Node 0x____ (0x000d6f00________) joined the network.
 ```
 
 `000d6f00` is the Ember/Silicon Labs OUI, so a node with that prefix joining is your printer.
+
+## How sure is the channel set?
+
+`[11, 14, 15, 19, 20, 24, 25]` is BERG's `channel_list`, at `api.pyc.py:58`. It says where BERG
+creates the network, and the scan set is inferred from that. The printer's firmware has not been
+read.
+
+On my unit the printer has worked on 15, 19, 24 and 25, and found nothing on 17 or 23. Channels
+11, 14 and 20 have not been seen working, and the other seven have not been tested. Treat the
+list as a good guess.
+
+## Possible quirk: a power cut can strand the printer
+
+**Unproven, from one run of each case.** Even with the filter above, the daemon moves the network
+to the quietest allowed channel on every start, so the channel keeps changing. `power_on` reports
+the channel before the move. On my unit it went 24, 25, 24, 15 across four starts.
+
+After I pulled the Bridge's power with the channel free to move:
+
+```
+Removing all link keys
+EMBER_NETWORK_UP                      PAN ID unchanged
+Switching to channel 24               power_on had reported 25
+Node 0x7853 (...) left the network    two minutes later
+```
+
+The printer then stayed offline, with a red light and an empty packet list, for 24 minutes. It
+made no join attempt at all. The black button did not help, and neither did power-cycling the
+printer. Restarting the daemon brought it back in about 31 seconds, on a new channel.
+
+The same test with the filter reduced to one channel:
+
+```python
+ALLOWED_CHANNELS = (15,)
+```
+
+gave this, without touching the printer:
+
+```
+Channel filter: 1 of 16 channels allowed [15]
+Switching to channel 15 with lowest energy -71
+Node 0x____ (...) joined the network.    about 2 seconds later
+Issuing device_connect                   14 seconds after the network came up
+```
+
+My best explanation is that the printer loses the Bridge when the channel moves while it is away.
+Nothing has proven it.
+
+**If the printer's light is still red ten minutes after a power cut,** restart the daemon. Do not use the reset hole on
+the printer, because that means claiming it again. Restart with the detached method under
+"The daemon dies with the ssh session that started it" in `05-bridge-gotchas.md`, after stopping
+only the wrapper and the Python process. `/etc/init.d/S99bergcloud_bridge stop` runs `killall sh`,
+which also kills the `bergcloud_linkd` wrapper and your own shell.
+
+Pinning stops the Bridge moving away from noise, so a new Wi-Fi network on that channel can slow
+your prints. Pick a channel the printer has worked on, and compare a few
+`Channel energies` tables from the daemon log first, because one scan is only one moment.
