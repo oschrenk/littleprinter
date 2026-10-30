@@ -1,0 +1,7 @@
+#!/bin/sh
+# Berg Cloud Bridge. Override the host with BRIDGE_IP if it moves.
+: "${BRIDGE_IP:=192.168.1.27}"
+exec ssh -i "$HOME/.ssh/berg_bridge_rsa" -o IdentitiesOnly=yes -o BatchMode=yes \
+  -o StrictHostKeyChecking=accept-new \
+  -oKexAlgorithms=+diffie-hellman-group1-sha1 -oHostKeyAlgorithms=+ssh-rsa \
+  -oPubkeyAcceptedAlgorithms=+ssh-rsa "root@$BRIDGE_IP" "$@"

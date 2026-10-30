@@ -2,6 +2,7 @@
 
 Python 3, no third-party packages. `verify_claim_code.py` shells out to `openssl` for AES;
 the others need only the standard library.
+`bridge-ssh` is plain `sh`.
 
 ## verify_claim_code.py
 
@@ -92,3 +93,15 @@ zlib.crc32(data, 0xFFFFFFFF) ^ 0xFFFFFFFF
 
 not `zlib.crc32(data, 0)`. Get it wrong and every single node looks corrupt, which is a very
 convincing way to waste an hour.
+
+## bridge-ssh
+
+Run a shell or a command on the Bridge as root, with the legacy algorithm flags that
+Dropbear 2012.55 needs. Override the host with `BRIDGE_IP`.
+
+```sh
+./bridge-ssh 'echo connected'
+```
+
+It reads the private key from `~/.ssh/berg_bridge_rsa`. That key now lives in 1Password, so
+the script fails until the key is back at that path. See LP-21.
