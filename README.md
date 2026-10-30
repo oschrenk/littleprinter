@@ -14,7 +14,7 @@ The hardware was fine. Everything that failed, failed for a reason nobody had do
 | 2 | [The Bridge picks a Zigbee channel the printer never scans](docs/02-zigbee-channel-selection.md) | A real bug in BERG's own code. The printer can never find the Bridge. |
 | 3 | [Claim codes, link keys, and why a reset printer stops working](docs/03-claim-codes-and-link-keys.md) | A printer claimed *before* a factory reset will join and rejoin forever. Includes how to verify a link key yourself. |
 | 4 | [Serial console and getting root](docs/04-serial-console-and-root.md) | The published pinout is reversed, `single` does nothing, and the password is DES-truncated to 8 characters. |
-| 5 | [Assorted Bridge gotchas](docs/05-bridge-gotchas.md) | The boot loop, the disabled SSH stub, the watchdog that reboots you mid-debug, the dead update server costing 75 s per boot. |
+| 5 | [Assorted Bridge gotchas](docs/05-bridge-gotchas.md) | The boot loop, the disabled SSH stub, the watchdog that reboots you mid-debug, the dead update server costing 30 s per boot, and why a restart voids the printer pairing. |
 
 ## Tools
 
@@ -50,8 +50,8 @@ In [`tools/`](tools/), all dependency-free Python 3:
   works. Has bugs; see finding 3.
 - `alpha.littleprinter.com` — resolves, answers nothing. The claim page still tells you to
   point your Bridge at it. **Do not.**
-- `bergcloud.com` and `bridge-updates.bergcloud.com` — gone. The latter costs you a TCP
-  timeout on every single boot.
+- `bergcloud.com` and `bridge-updates.bergcloud.com` — gone. The latter still resolves, so
+  you pay a full 30-second TCP timeout on every single boot. See finding 5.
 - BERG's own help pages — gone, and the Internet Archive copy of `bergcloud.com/help/`
   returns an empty document.
 - `tinyprinter.club` — up, but its Discord invite is expired.
