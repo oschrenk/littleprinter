@@ -28,6 +28,52 @@ In [`tools/`](tools/), all dependency-free Python 3:
 - `jffs2_extract.py` — reassemble a file from jffs2 data nodes in a raw image, reporting
   which nodes failed their CRC and which byte ranges are therefore missing.
 
+## The client
+
+[`client/`](client/) is a Rust reimplementation of the Sirius server's image-to-payload encoder,
+so a payload can be built locally instead of only on the server. The byte layout it implements
+is documented nowhere public; it was read out of `nordprojects/sirius` and is written up in the
+source.
+
+It is verified **byte-identical** to Sirius's own Python output, using Sirius's committed
+`barcode-head.png` as the fixture. One check is a hand-derived 37-byte vector asserted as a
+literal, so the suite does not depend on having Python and Pillow available.
+
+It deliberately **differs** from Python for one class of image, and that difference is the
+interesting part. `rle_from_bw` tries to guarantee the encoded stream starts with a white run:
+
+```python
+WHITE = '\xff'
+BLACK = '\x00'
+if groups[0][0] == BLACK:
+    groups.insert(0, (WHITE, 0))
+```
+
+`getdata()` on a mode `"1"` image yields **ints**, 0 or 255, while `BLACK` is a one-character
+**str**. On Python 3 that is never equal, so the guard never fires. The consequence is sharper
+than a missing edge case: **an all-black row encodes byte-identically to an all-white row** —
+same length, same md5. Two opposite images are indistinguishable on the wire, and the printer
+resolves the ambiguity by inverting.
+
+So if the first pixel after the encoder's 180° rotation is black — which is the artwork's
+**bottom-right** pixel — the print comes out inverted. Note that BERG's own `normalface.png`,
+committed in `nordprojects/sirius`, is black-first. **Their own face asset prints inverted
+through their own encoder.** This client inserts the zero-length white run, so it is one byte
+longer than Python for such images, and a test asserts that divergence on purpose.
+
+Measured on the Bridge itself: 455 kB static `armv5te-unknown-linux-musleabi` binary, 848 kB
+peak resident for a four-image `SetPersonality`, 269 ms. Output is byte-identical between the
+macOS and ARM builds.
+
+```sh
+nix develop      # or direnv, via .envrc
+task test        # 7 tests, against the golden vectors
+task bridge      # static ARM build, checked with file(1)
+```
+
+One deliberate limitation: it **refuses any pixel that is not pure black or white**, rather than
+guessing at Pillow's Floyd–Steinberg dither. Artwork must be 1-bit before it reaches the encoder.
+
 ## If your Bridge is misbehaving, check these first
 
 1. **`dmesg | grep -i "uncorrectable\|wrong data CRC"`.** If anything appears, you may have
