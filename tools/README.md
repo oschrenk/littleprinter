@@ -103,8 +103,7 @@ Dropbear 2012.55 needs. Override the host with `BRIDGE_IP`.
 ./bridge-ssh 'echo connected'
 ```
 
-It reads the private key from `~/.ssh/berg_bridge_rsa`. That key now lives in 1Password, so
-the script fails until the key is back at that path. See LP-21.
+It reads the private key from `~/.ssh/berg_bridge_rsa`. The recovery copy is in 1Password.
 
 ## sanitize_capture.py
 

@@ -130,9 +130,13 @@ Then install a key so you stop typing that password. Dropbear reads
 `/root/.ssh/authorized_keys`, and it must be an **RSA** key — this build predates ed25519:
 
 ```sh
-ssh-keygen -t rsa -b 2048 -f ~/.ssh/bridge_rsa -N ""
-cat ~/.ssh/bridge_rsa.pub | ssh -oKexAlgorithms=+diffie-hellman-group1-sha1 \
+ssh-keygen -t rsa -b 2048 -f ~/.ssh/berg_bridge_rsa -N ""
+cat ~/.ssh/berg_bridge_rsa.pub | ssh -oKexAlgorithms=+diffie-hellman-group1-sha1 \
   -oHostKeyAlgorithms=+ssh-rsa root@BRIDGE_IP \
   'mount -o remount,rw / && mkdir -p /root/.ssh && cat >> /root/.ssh/authorized_keys \
    && chmod 600 /root/.ssh/authorized_keys && sync && echo KEY_INSTALLED'
 ```
+
+`tools/bridge-ssh` expects the key at `~/.ssh/berg_bridge_rsa`. The key has no passphrase, so
+keep a recovery copy somewhere safe, such as a password manager. If you lose it, the serial
+console above gets you back in.
